@@ -1,0 +1,28 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div>
+    <h1 class="display-4">Home</h1>
+    <ul>
+        <li>
+            Inventory
+            <ul>
+                <li>
+                    Raw Materials
+                    <ul>
+                        <li>
+                            <a asp-page="/Inventory/RawMaterial/RawMaterialPurchaseHistory">Raw Material Purchase History</a>
+                        </li>
+                        <li>
+                            <a asp-page="/Inventory/RawMaterialPurchaseHistory">Purchase New Raw Material</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+

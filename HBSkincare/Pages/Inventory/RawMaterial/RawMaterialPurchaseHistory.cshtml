@@ -1,0 +1,150 @@
+﻿@page
+@model HBSkincare.Pages.Inventory.RawMaterialPurchaseHistoryModel
+@{
+    ViewData["Title"] = "Raw Material Purchase History";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-6">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="col-5 row offset-1 p-0">
+        <div class="col-4 p-0 pr-2 text-right">
+        </div>
+        <div class="col-8 dropdown p-0">
+            <button class="btn btn-outline-secondary dropdown-toggle btn-block" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @(Model.ChosenMaterial == null? "Filter Raw Material": Model.ChosenMaterial)
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a href="#"> </a>
+                @foreach (var item in Model.RawMaterials)
+                {
+                    <a class="dropdown-item" asp-route-ChosenMaterial="@item.MaterialName">@item.MaterialName</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <div class="col-12 mt-3 mb-2">
+        <div class="d-flex justify-content-between p-0">
+            <div class="p-2 d-flex small text-black-50">
+                @if (Model.PageNumber > 1)
+                {
+                    <a class="text-black-50" asp-route-PageNumber="@(Model.PageNumber-1)" asp-route-ChosenMaterial="@Model.ChosenMaterial">Previous</a>
+                }
+            </div>
+            <div class="p-2 d-flex">
+                <span class="small">Page:</span>
+                <button class="btn btn-outline-light btn-sm dropdown-toggle btn-block border text-black-50 py-0 ml-1" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @Model.PageNumber
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @for (int i = 1; i <= Model.NumberPages; i++)
+                    {
+                        <a class="dropdown-item small" asp-route-PageNumber="@i" asp-route-ChosenMaterial="@Model.ChosenMaterial">@i</a>
+                    }
+                </div>
+            </div>
+            <div class="p-2 d-flex small">
+                @if (Model.PageNumber < Model.NumberPages)
+                {
+                    <a class="text-black-50" asp-route-PageNumber="@(Model.PageNumber+1)" asp-route-ChosenMaterial="@Model.ChosenMaterial">Next</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-2">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th>
+                    <label asp-for="RawMaterials.FirstOrDefault().MaterialName"></label>
+                </th>
+                <th>
+                    <label asp-for="RawMaterials.FirstOrDefault().CurrentInventory"></label>
+                </th>
+                <th>
+                    <label asp-for="Purchases.FirstOrDefault().DateRecieved"></label>
+                </th>
+                <th>
+                    <label asp-for="Purchases.FirstOrDefault().PurchaseSize"></label>
+                </th>
+                <th>
+                    <label asp-for="Purchases.FirstOrDefault().CurrentInventory"></label>
+                </th>
+                <th>
+                    <label asp-for="Purchases.FirstOrDefault().SupplierName"></label>
+                </th>
+                <th>
+                    
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model.Purchases)
+            {
+                <tr>
+                    <td>
+                        <a asp-page="/Inventory/RawMaterial/ViewRawMaterial" asp-route-Id="@item.RawMaterial.RawMaterialItemId">@item.RawMaterial.MaterialName</a>   
+                    </td>
+                    <td>
+                        @item.RawMaterial.CurrentInventory (@item.RawMaterial.UnitOfMeasure)
+                    </td>
+                    <td>
+                        @(item.DateRecieved.HasValue? item.DateRecieved.Value.ToString("yyyy-MM-dd"): "")
+                    </td>
+                    <td>
+                        @item.PurchaseSize (@item.UnitOfMeasure)
+                    </td>
+                    <td>
+                        @item.CurrentInventory (@item.UnitOfMeasure)
+                    </td>
+                    <td>
+                        @item.SupplierName
+                    </td>
+                    <td>
+                        <a class="btn btn-info" asp-page="/Inventory/RawMaterial/RawMaterialPurchaseCrud" asp-route-Id="@item.RawMaterialPurchaseId">Purchase Info</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <div class="col-12 mt-3">
+        <div class="d-flex justify-content-between p-0">
+            <div class="p-2 d-flex small text-black-50">
+                @if (Model.PageNumber > 1)
+                {
+                    <a class="text-black-50" asp-route-PageNumber="@(Model.PageNumber-1)" asp-route-ChosenMaterial="@Model.ChosenMaterial">Previous</a>
+                }
+            </div>
+            <div class="p-2 d-flex">
+                <span class="small">Page:</span>
+                <button class="btn btn-outline-light btn-sm dropdown-toggle btn-block border text-black-50 py-0 ml-1" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @Model.PageNumber
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @for (int i = 1; i <= Model.NumberPages; i++)
+                    {
+                        <a class="dropdown-item small" asp-route-PageNumber="@i" asp-route-ChosenMaterial="@Model.ChosenMaterial">@i</a>
+                    }
+                </div>
+            </div>
+            <div class="p-2 d-flex small">
+                @if (Model.PageNumber < Model.NumberPages)
+                {
+                    <a class="text-black-50" asp-route-PageNumber="@(Model.PageNumber+1)" asp-route-ChosenMaterial="@Model.ChosenMaterial">Next</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
