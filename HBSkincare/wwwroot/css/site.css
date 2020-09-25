@@ -69,3 +69,12 @@ body {
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
 }
+
+.blue-shine {
+    -webkit-transition: all 0.30s ease-in-out;
+    -moz-transition: all 0.30s ease-in-out;
+    -o-transition: all 0.30s ease-in-out;
+
+    box-shadow: 0 0 10px rgba(122, 255, 162, 1);
+    border: 1px solid rgba(122, 255, 162, 1);
+}

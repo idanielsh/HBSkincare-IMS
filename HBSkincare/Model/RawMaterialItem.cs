@@ -10,19 +10,11 @@ namespace HBSkincare.Model
     {
         public int RawMaterialItemId { get; set; }
         [Required]
-        [Display(Name = "Ingridient")]
+        [Display(Name = "Ingridient Name")]
         public string MaterialName { get; set; }
-        public string Inci { get; set; } = null;
-        [Display(Name = "Total Inventory")]
-        public int CurrentInventory { get; set; } = 0;
+        [Display(Name = "Unit of Measurement")]
         public string UnitOfMeasure { get; set; } = null;
-        public double CostPerUnit { get; set; } = 0;
-        public double LandedCostPerUnit { get; set; } = 0;
-        public double YearEndInventoryWithScrap { get; set; } = 0;
-        public double YearEndInventoryNoScrap { get; set; } = 0;
-        public double LandedCost { get; set; } = 0;
-        public double ScrapValue { get; set; } = 0;
-        public ICollection<RawMaterialPurchase> Purchases { get; set; }
+        public virtual ICollection<RawMaterialPurchase> Purchases { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -35,15 +27,7 @@ namespace HBSkincare.Model
             HashCode hash = new HashCode();
             hash.Add(RawMaterialItemId);
             hash.Add(MaterialName);
-            hash.Add(Inci);
-            hash.Add(CurrentInventory);
             hash.Add(UnitOfMeasure);
-            hash.Add(CostPerUnit);
-            hash.Add(LandedCostPerUnit);
-            hash.Add(YearEndInventoryWithScrap);
-            hash.Add(YearEndInventoryNoScrap);
-            hash.Add(LandedCost);
-            hash.Add(ScrapValue);
             hash.Add(Purchases);
             return hash.ToHashCode();
         }

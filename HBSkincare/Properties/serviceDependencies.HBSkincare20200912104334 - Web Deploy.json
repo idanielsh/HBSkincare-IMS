@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "mssql2": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroup')]/providers/Microsoft.Sql/servers/hbskincareidentityserver/databases/IdentityDB",
+      "type": "mssql.azure",
+      "connectionId": "IdentityConnection",
+      "secretStore": "AzureAppSettings"
+    },
+    "mssql3": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.Sql/servers/hbskincareidentityserver/databases/IdentityDB",
+      "type": "mssql.azure",
+      "connectionId": "HBSkincareDBContext",
+      "secretStore": "AzureAppSettings"
+    }
+  }
+}

@@ -1,0 +1,196 @@
+﻿@page
+@model HBSkincare.Pages.Inventory.RawMaterial.RawMaterialItemCrudModel
+@using HBSkincare.Managers;
+@{
+    ViewData["Title"] = Model.Editing ? $"Raw Material - {Model.Material.MaterialName}" : "New Raw Material";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+    
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model.ErrorMessage != null)
+{
+    @await Html.PartialAsync("Shared/_ErrorMessage", Model.ErrorMessage)
+}
+
+@if (Model.SuccessMessage != null)
+{
+    @await Html.PartialAsync("Shared/_SuccessMessage", Model.SuccessMessage)
+}
+
+@if (Model.Editing)
+{
+    <div class="border p-2">
+        <h3>Active Purchases</h3>
+        <table class="table text-center">
+            <thead>
+                <tr>
+                    <th>
+                        <label asp-for="Purchases.FirstOrDefault().LotNumber"></label>
+                    </th>
+                    <th>
+                        <label asp-for="Purchases.FirstOrDefault().SupplierName"></label>
+                    </th>
+                    <th style="width: 7%">
+                        <label asp-for="Purchases.FirstOrDefault().DateRecieved"></label>
+                    </th>
+                    <th style="width: 7%">
+                        <label asp-for="Purchases.FirstOrDefault().ExpiryDate"></label>
+                    </th>
+                    <th>
+                        <label asp-for="Purchases.FirstOrDefault().PurchaseSize"></label>
+                    </th>
+                    <th>
+                        <label asp-for="Purchases.FirstOrDefault().CurrentInventory"></label>
+                    </th>
+                    <th>
+                        <label>Amount Used</label>
+                    </th>
+                    <th>
+                        <label>Amount Remaining</label>
+                    </th>
+                    <th></th>
+                    <th style="width: 10%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Purchases == null || Model.Purchases.Count() == 0)
+                {
+                    <tr>
+                        <td colspan="9">
+                            No inventory remaining for resource.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Purchases)
+                    {
+                        <tr>
+                            <td>
+                                <span>@item.LotNumber</span>
+                            </td>
+                            <td>
+                                <span>@item.SupplierName</span>
+                            </td>
+                            <td>
+                                <span>@(item.DateRecieved.HasValue?item.DateRecieved.Value.ToString("yyyy-MM-dd"):"")</span>
+                            </td>
+                            <td>
+                                <span>@(item.ExpiryDate.HasValue?item.ExpiryDate.Value.ToString("yyyy-MM-dd"):"")</span>
+                            </td>
+                            <td>
+                                <span>@item.PurchaseSize</span>
+                            </td>
+                            <td>
+                                <span id="CurrentInventory@(item.RawMaterialPurchaseId)">@item.CurrentInventory</span>
+                            </td>
+                            <td>
+                                <input type="number" min="0" step="any" class="form-control" id="InventoryToRemove@(item.RawMaterialPurchaseId)" value="0" onchange="updateRemainingInventory(@(item.RawMaterialPurchaseId))" />
+                            </td>
+                            <form method="post" asp-page-handler="UpdateQty">
+                                <td>
+                                    <input name="id" value="@item.RawMaterialPurchaseId" hidden />
+                                    <input asp-for="Material.RawMaterialItemId" hidden />
+                                    <input type="text" class="form-control" id="Remaining@(item.RawMaterialPurchaseId)" name="RemainingInventory" readonly>
+                                </td>
+                                <td>
+                                    <input type="submit" class="btn btn-primary" value="Update Inventory" />
+                                </td>
+                            </form>
+                            <td>
+                                <a asp-page="/Inventory/RawMaterial/RawMaterialPurchaseCrud" class="btn btn-success" asp-route-Id="@item.RawMaterialPurchaseId">View Purchase</a>
+                            </td>
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+    <br />
+    <hr />
+}
+
+@if (Model.Editing)
+{
+    <div class="col-2 offset-10 text-right">
+        <br />
+        <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="editMode" onclick="changeEditMode()">
+            <label class="custom-control-label" for="editMode">Edit Mode</label>
+        </div>
+    </div>
+}
+else
+{
+    <input type="checkbox" class="custom-control-input" id="editMode" onclick="changeEditMode()" checked hidden>
+}
+
+<div>
+    <form method="post">
+        <input asp-for="Editing" hidden />
+        <div class="row">
+            <div class="col-4">
+                <label asp-for="Material.MaterialName"></label>
+                <input class="form-control CanBeReadonly" asp-for="Material.MaterialName" required />
+            </div>
+            <div class="col-4">
+                <label asp-for="Material.UnitOfMeasure"></label>
+                <input class="form-control CanBeReadonly" asp-for="Material.UnitOfMeasure" required />
+            </div>
+        </div>
+        @if (Model.Editing)
+        {
+            <div class="row">
+                <div class="col-4">
+                    <label>Cost Per Unit</label>
+                    <span class="form-control">@(Model.Material.Purchases.WeightedAverage(e => e.CostPerUnit, e=> e.CurrentInventory))</span>
+                </div>
+                <div class="col-4">
+                    <label>Landed Cost Per Unit</label>
+                    <span class="form-control">@(Model.Material.Purchases.WeightedAverage(e => e.LandedCostPerUnit, e=> e.CurrentInventory))</span>
+                </div>
+                <div class="col-4">
+                    <label>Total Value</label>
+                    <span class="form-control">@Model.TotalValue</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    <label>Total Inventory</label>
+                    <span class="form-control">@Model.TotalInventory</span>
+                </div>
+                <div class="col-4">
+                    <label>Scrap Value</label>
+                    <span class="form-control">@Model.ScrapValue</span>
+                </div>
+            </div>
+        }
+
+    <br />
+        <div class="row">
+            <div class="col-4 offset-8">
+                <input type="submit" class="btn btn-block btn-primary" value="Submit" />
+            </div>
+        </div>
+
+    </form>
+</div>
+
+
+<script type="text/javascript" src="~/js/InventoryScripts.js"></script>
+
+<script>
+    function updateRemainingInventory(x) {
+        var initial = document.getElementById("CurrentInventory"+x);
+        var delta = document.getElementById("InventoryToRemove"+x);
+        var final = document.getElementById("Remaining"+x);
+        final.value = parseFloat(initial.innerHTML) - delta.value;
+    }
+
+    $(function () {
+        changeEditMode();
+    });
+</script>

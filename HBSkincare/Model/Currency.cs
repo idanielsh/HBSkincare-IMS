@@ -9,6 +9,5 @@ namespace HBSkincare.Model
     {
         public int CurrencyId { get; set; }
         public string CurrencyName { get; set; }
-        public double? ValueInCad { get; set; }
     }
 }

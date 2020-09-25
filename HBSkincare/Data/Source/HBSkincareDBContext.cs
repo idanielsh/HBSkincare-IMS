@@ -7,13 +7,15 @@ namespace HBSkincare.Data.Source
 {
     public partial class HBSkincareDBContext : DbContext
     {
+        private const string ConnectionString = @"Data Source=DESKTOP-0EU3GVK;Initial Catalog=HBSkincareData;Trusted_Connection=True;";
+
         public DbSet<Currency> Currency { get; set; }
         public DbSet<RawMaterialItem> RawMaterialItem { get; set; }
         public DbSet<RawMaterialPurchase> RawMaterialPurchase { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Data Source=DESKTOP-0EU3GVK;Initial Catalog=HBSkincareData;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(ConnectionString);
         }
 
 

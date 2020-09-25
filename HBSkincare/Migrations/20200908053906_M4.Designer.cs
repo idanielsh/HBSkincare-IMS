@@ -4,14 +4,16 @@ using HBSkincare.Data.Source;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HBSkincare.Migrations
 {
     [DbContext(typeof(HBSkincareDBContext))]
-    partial class HBSkincareDBContextModelSnapshot : ModelSnapshot
+    [Migration("20200908053906_M4")]
+    partial class M4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,15 +43,36 @@ namespace HBSkincare.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<double>("CostPerUnit")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CurrentInventory")
+                        .HasColumnType("float");
+
                     b.Property<string>("Inci")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("LandedCost")
+                        .HasColumnType("float");
+
+                    b.Property<double>("LandedCostPerUnit")
+                        .HasColumnType("float");
 
                     b.Property<string>("MaterialName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<double>("ScrapValue")
+                        .HasColumnType("float");
+
                     b.Property<string>("UnitOfMeasure")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("YearEndInventoryNoScrap")
+                        .HasColumnType("float");
+
+                    b.Property<double>("YearEndInventoryWithScrap")
+                        .HasColumnType("float");
 
                     b.HasKey("RawMaterialItemId");
 
@@ -102,9 +125,6 @@ namespace HBSkincare.Migrations
                     b.Property<string>("LotNumber")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("OrderNum")
                         .HasColumnType("nvarchar(max)");
 
@@ -120,12 +140,6 @@ namespace HBSkincare.Migrations
                     b.Property<int?>("RawMaterialItemId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("ScrapDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double?>("ScrapValue")
-                        .HasColumnType("float");
-
                     b.Property<double>("Shipping")
                         .HasColumnType("float");
 
@@ -133,6 +147,9 @@ namespace HBSkincare.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SupplierSku")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UnitOfMeasure")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("RawMaterialPurchaseId");

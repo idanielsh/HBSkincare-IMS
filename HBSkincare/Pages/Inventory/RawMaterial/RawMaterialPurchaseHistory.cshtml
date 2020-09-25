@@ -6,7 +6,7 @@
 }
 
 
-<div class="row">
+<div class="row pl-3 pr-3">
     <div class="col-6">
         <h2>@ViewData["Title"]</h2>
     </div>
@@ -63,55 +63,86 @@
     <table class="table text-center">
         <thead>
             <tr>
-                <th>
+                <th class="align-middle text-left">
                     <label asp-for="RawMaterials.FirstOrDefault().MaterialName"></label>
-                </th>
-                <th>
-                    <label asp-for="RawMaterials.FirstOrDefault().CurrentInventory"></label>
-                </th>
-                <th>
-                    <label asp-for="Purchases.FirstOrDefault().DateRecieved"></label>
                 </th>
                 <th>
                     <label asp-for="Purchases.FirstOrDefault().PurchaseSize"></label>
                 </th>
+
                 <th>
                     <label asp-for="Purchases.FirstOrDefault().CurrentInventory"></label>
                 </th>
                 <th>
+                    <label>Total Inventory</label>
+                </th>
+
+                <th>
+                    <label asp-for="Purchases.FirstOrDefault().DateRecieved"></label>
+                </th>
+
+
+                <th>
                     <label asp-for="Purchases.FirstOrDefault().SupplierName"></label>
                 </th>
                 <th>
-                    
+                    <label asp-for="Purchases.FirstOrDefault().OrderNum"></label>
+                </th>
+                <th class="align-middle">
+                    <label asp-for="Purchases.FirstOrDefault().LotNumber"></label>
+                </th>
+                <th class="align-middle">
+                    <label asp-for="Purchases.FirstOrDefault().ExpiryDate"></label>
+                </th>
+                <th>
+                    <label asp-for="Purchases.FirstOrDefault().ScrapDate"></label>
+                </th>
+                <th>
+
                 </th>
             </tr>
         </thead>
         <tbody>
             @foreach(var item in Model.Purchases)
             {
-                <tr>
-                    <td>
-                        <a asp-page="/Inventory/RawMaterial/ViewRawMaterial" asp-route-Id="@item.RawMaterial.RawMaterialItemId">@item.RawMaterial.MaterialName</a>   
-                    </td>
-                    <td>
-                        @item.RawMaterial.CurrentInventory (@item.RawMaterial.UnitOfMeasure)
-                    </td>
-                    <td>
-                        @(item.DateRecieved.HasValue? item.DateRecieved.Value.ToString("yyyy-MM-dd"): "")
-                    </td>
-                    <td>
-                        @item.PurchaseSize (@item.UnitOfMeasure)
-                    </td>
-                    <td>
-                        @item.CurrentInventory (@item.UnitOfMeasure)
-                    </td>
-                    <td>
-                        @item.SupplierName
-                    </td>
-                    <td>
-                        <a class="btn btn-info" asp-page="/Inventory/RawMaterial/RawMaterialPurchaseCrud" asp-route-Id="@item.RawMaterialPurchaseId">Purchase Info</a>
-                    </td>
-                </tr>
+            <tr>
+                <td class="text-left">
+                    <a asp-page="/Inventory/RawMaterial/RawMaterialItemCrud" asp-route-Id="@item.RawMaterial.RawMaterialItemId">@item.RawMaterial.MaterialName</a>
+                </td>
+                <td>
+                    @item.PurchaseSize (@item.RawMaterial.UnitOfMeasure)
+                </td>
+
+                <td>
+                    @item.CurrentInventory (@item.RawMaterial.UnitOfMeasure)
+                </td>
+                <td>
+                    @Model.InventorySums[item.RawMaterial] (@item.RawMaterial.UnitOfMeasure)
+                </td>
+                <td>
+                    @(item.DateRecieved.HasValue? item.DateRecieved.Value.ToString("yyyy-MM-dd"): "")
+                </td>
+
+
+                <td>
+                    @item.SupplierName
+                </td>
+                <td>
+                    @item.OrderNum
+                </td>
+                <td>
+                    @item.LotNumber
+                </td>
+                <td>
+                    @(item.ExpiryDate.HasValue? item.ExpiryDate.Value.ToString("yyyy-MM-dd"): "")
+                </td>
+                <td>
+                    @(item.ScrapDate.HasValue? item.ScrapDate.Value.ToString("yyyy-MM-dd"): "N/A")
+                </td>
+                <td>
+                    <a class="btn btn-info btn-block" asp-page="/Inventory/RawMaterial/RawMaterialPurchaseCrud" asp-route-Id="@item.RawMaterialPurchaseId">Purchase Info</a>
+                </td>
+            </tr>
             }
         </tbody>
     </table>

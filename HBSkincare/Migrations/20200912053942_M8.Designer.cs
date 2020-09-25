@@ -4,14 +4,16 @@ using HBSkincare.Data.Source;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HBSkincare.Migrations
 {
     [DbContext(typeof(HBSkincareDBContext))]
-    partial class HBSkincareDBContextModelSnapshot : ModelSnapshot
+    [Migration("20200912053942_M8")]
+    partial class M8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

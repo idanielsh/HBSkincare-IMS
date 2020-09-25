@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using HBSkincare.Data.Source;
+using HBSkincare.Managers;
 
 namespace HBSkincare
 {
@@ -37,6 +38,7 @@ namespace HBSkincare
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
+            services.AddTransient<RawMaterialItemManager>();
 
             services.Configure<IdentityOptions>(options =>
             {

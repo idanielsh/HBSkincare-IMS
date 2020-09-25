@@ -5,33 +5,58 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h2>@ViewData["Title"]</h2>
+    <div class="row">
+        <div class="col-6">
+            <h2>
+                @ViewData["Title"]
+            </h2>
+        </div>
+        @if (Model.Purchase.ScrapDate.HasValue)
+        {
+            <div class="col-6 text-right">
+                <h2 class="text-danger display-4">Scrapped</h2>
+            </div>
+        }
+    </div>
 <br />
-@if (Model.Editing)
+
+@if (Model.ErrorMessage != null)
+{
+    @await Html.PartialAsync("Shared/_ErrorMessage", Model.ErrorMessage)
+}
+
+@if (Model.SuccessMessage != null)
+{
+    @await Html.PartialAsync("Shared/_SuccessMessage", Model.SuccessMessage)
+}
+
+
+@if (Model.Editing && !Model.Purchase.ScrapDate.HasValue)
 {
     <div>
         <form method="post" asp-page-handler="UpdateQty">
+            <input name="id" value="@Model.Purchase.RawMaterialPurchaseId" hidden/>
             <div class="row pb-2">
                 <div class="col-4">
                     <label asp-for="Purchase.CurrentInventory"></label>
                     <div class="input-group mb-3">
                         <input type="text" id="CurrentInventory" class="form-control" aria-describedby="basic-addon1" value="@Model.Purchase.CurrentInventory" readonly>
                         <div class="input-group-append">
-                            <span class="input-group-text" id="basic-addon1">@Model.Purchase.UnitOfMeasure</span>
+                            <span class="input-group-text unit-of-measure" id="basic-addon1">@(Model.Purchase.RawMaterial == null? "": Model.Purchase.RawMaterial.UnitOfMeasure)</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-4">
                     <label for="InventoryToRemove">Amount Used</label>
-                    <input type="number" class="form-control" id="InventoryToRemove" value="0" onchange="updateRemainingInventory()" />
+                    <input type="number" min="0" step="any" class="form-control" id="InventoryToRemove" value="0" onchange="updateRemainingInventory()" />
                 </div>
                 <div class="col-4">
                     <label for="Remaining">Amount Remaining</label>
 
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="Remaining" name="RemainingInventory" aria-describedby="basic-addon3" readonly>
+                        <input type="text" class="form-control" id="Remaining" name="RemainingInventory" aria-describedby="basic-addon2" readonly>
                         <div class="input-group-append">
-                            <span class="input-group-text" id="basic-addon3">@Model.Purchase.UnitOfMeasure</span>
+                            <span class="input-group-text unit-of-measure" id="basic-addon2">@(Model.Purchase.RawMaterial == null? "": Model.Purchase.RawMaterial.UnitOfMeasure)</span>
                         </div>
                     </div>
                 </div>
@@ -43,40 +68,216 @@
             </div>
         </form>
     </div>
-}
-
-<br />
-
-
-@if (Model.Editing)
-{
-    <div class="row">
-        <div class="col-2 offset-10 text-right">
-            <div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" id="editMode" onclick="editMode()">
-                <label class="custom-control-label" for="editMode">Edit Mode</label>
-            </div>
-        </div>
-    </div>
+    <br />
+    <hr />
 }
 
 <form method="post">
     <div class="row">
         <div class="col-4">
             <span class="font-weight-bold">Raw Material</span>
-            <select class="CanBeDisabled custom-select" asp-for="ChosenRawMaterialId" asp-items="Model.RawMaterials.Select(e => new SelectListItem { Value = e.RawMaterialItemId.ToString(), Text= e.MaterialName })"></select>
+            <select class="CanBeDisabled custom-select" id="ChosenRawMaterial" asp-for="ChosenRawMaterialId"  asp-items="Model.RawMaterials.Select(e => new SelectListItem { Value = e.RawMaterialItemId.ToString(), Text= e.MaterialName })" onchange="LoadUnits(this.value); updateLandedCost();"></select>
         </div>
         <div class="col-3">
             <br />
-            <a class="canBeHidden btn btn-block btn-outline-info" asp-page="/Inventory/RawMaterial/AddNewRawMaterial">Add New Raw Material</a>
+            <a class="canBeHidden btn btn-block btn-outline-info" asp-page="/Inventory/RawMaterial/RawMaterialItemCrud">Add New Raw Material</a>
+        </div>
+        @if (Model.Editing)
+        {
+            if (Model.Purchase.ScrapDate.HasValue)
+            {
+                <input type="checkbox" class="custom-control-input" id="editMode" onclick="changeEditMode()" hidden>
+            }
+            else
+            {
+                <div class="col-2 offset-3 text-right">
+                    <br />
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="editMode" onclick="changeEditMode()">
+                        <label class="custom-control-label" for="editMode">Edit Mode</label>
+                    </div>
+                </div>
+            }
+
+        }
+        else
+        {
+            <input type="checkbox" class="custom-control-input" id="editMode" onclick="changeEditMode()" checked hidden>
+        }
+    </div>
+    <br />
+    <input asp-for="Editing" hidden />
+    <input asp-for="Purchase.RawMaterialPurchaseId" hidden />
+    <div class="row">
+        <div class="col-4">
+            <label asp-for="Purchase.PurchaseSize"></label>
+            <div class="input-group mb-3">
+                <input class="form-control CanBeReadonly" asp-for="Purchase.PurchaseSize" id="purchase-size" onchange="purchaseSizeChanged()" aria-describedby="basic-addon3" required />
+                <div class="input-group-append">
+                    <span class="input-group-text unit-of-measure" id="basic-addon3"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <label asp-for="Purchase.CurrentInventory"></label>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control CanBeReadonly" aria-describedby="basic-addon5" asp-for="Purchase.CurrentInventory" id="CurrentInventoryEditor" required>
+                <div class="input-group-append">
+                    <span class="input-group-text unit-of-measure" id="basic-addon5">@(Model.Purchase.RawMaterial == null? "": Model.Purchase.RawMaterial.UnitOfMeasure)</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <label asp-for="Purchase.ExpiryDate"></label>
+            <input type="date" class="form-control CanBeReadonly" asp-for="Purchase.ExpiryDate" />
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-4">
+            <label asp-for="Purchase.SupplierName"></label>
+            <input class="form-control CanBeReadonly" asp-for="Purchase.SupplierName" />
+        </div>
+        <div class="col-4">
+            <label asp-for="Purchase.SupplierSku"></label>
+            <input class="form-control CanBeReadonly" asp-for="Purchase.SupplierSku" />
         </div>
     </div>
+    <br />
+    <div class="border p-2">
+        <div class="row">
+            <div class="col-3">
+                <label asp-for="Purchase.Gst"></label>
+                <input class="form-control CanBeReadonly landed-cost-sum" asp-for="Purchase.Pst" onchange="updateLandedCost()" id="pst" required />
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.Pst"></label>
+                <input class="form-control CanBeReadonly landed-cost-sum" asp-for="Purchase.Gst" onchange="updateLandedCost()" id="gst" required />
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.Shipping"></label>
+                <input class="form-control CanBeReadonly landed-cost-sum" asp-for="Purchase.Shipping" onchange="updateLandedCost()" required />
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.BrokerageFees"></label>
+                <input class="form-control CanBeReadonly landed-cost-sum" asp-for="Purchase.BrokerageFees" onchange="updateLandedCost()" required />
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-3">
+                <label asp-for="Purchase.Currency"></label>
+                <select class="CanBeDisabled custom-select currency-edit" id="ChosenCurrency" asp-for="ChosenCurrency" asp-items="Model.CurrenciesListItems" onchange="CalculateCurrency(this.value); updateLandedCost();" required></select>
+
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.ForexRate"></label>
+                <input class="form-control CanBeReadonly currency-edit" id="currency-rate" onchange="updateLandedCost()" asp-for="Purchase.ForexRate" required />
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.ExtendedCost"></label>
+                <input class="form-control CanBeReadonly landed-cost-sum" asp-for="Purchase.ExtendedCost" id="extended-cost" onchange="UpdateExtendedCostPerUnit(); updateLandedCost(); calculateTaxes();" required />
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.LandedCost"></label>
+                <input class="form-control CanBeReadonly" id="landedCost" asp-for="Purchase.LandedCost" required />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6"></div>
+            <div class="col-3">
+                <label asp-for="Purchase.CostPerUnit"></label>
+                <div class="input-group mb-3">
+                    <input class="form-control" asp-for="Purchase.CostPerUnit" aria-describedby="cost-per-unit-input-group" id="extended-cost-per-unit" readonly required />
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="cost-per-unit-input-group"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <label asp-for="Purchase.LandedCostPerUnit"></label>
+                <div class="input-group mb-3">
+                    <input class="form-control" asp-for="Purchase.LandedCostPerUnit" aria-describedby="basic-addon4" id="landed-cost-per-unit" readonly required />
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon4">CAD/<span class="unit-of-measure"></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-4">
+            <label asp-for="Purchase.LotNumber"></label>
+            <input class="form-control CanBeReadonly" asp-for="Purchase.LotNumber" />
+        </div>
+        <div class="col-4">
+            <label asp-for="Purchase.DateRecieved"></label>
+            <input type="date" class="form-control CanBeReadonly" asp-for="Purchase.DateRecieved" />
+        </div>
+        <div class="col-4">
+            <label asp-for="Purchase.OrderNum"></label>
+            <input class="form-control CanBeReadonly" asp-for="Purchase.OrderNum" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4">
+            <label asp-for="Purchase.PaymentMethod"></label>
+            <input class="form-control CanBeReadonly" asp-for="Purchase.PaymentMethod" />
+        </div>
+        <div class="col-4">
+            <label asp-for="Purchase.CashOutDate"></label>
+            <input type="date" class="form-control CanBeReadonly" asp-for="Purchase.CashOutDate" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <label asp-for="Purchase.Notes"></label>
+            <textarea rows="3" class="form-control CanBeReadonly" asp-for="Purchase.Notes"></textarea>
+        </div>
+    </div>
+
+
+    @if (Model.Purchase.ScrapDate.HasValue)
+    {
+        <div class="row">
+            <div class="col-4">
+                <label asp-for="Purchase.ScrapDate"></label>
+                <input type="date" class="form-control CanBeReadonly" asp-for="Purchase.ScrapDate" />
+            </div>
+            <div class="col-4">
+                <label asp-for="Purchase.ScrapValue"></label>
+                <input class="form-control CanBeReadonly" asp-for="Purchase.ScrapValue" />
+            </div>
+        </div>
+    }
+    <br />
+    <div class="row">
+        <div class="col-6">
+
+        </div>
+        @if (Model.Editing)
+        {
+            <div class="col-3">
+                <input type="submit" class="btn btn-danger btn-block canBeHidden" name="scrap" value="Scrap Purchase" />
+            </div>
+        }
+        else
+        {
+            <div class="col-3"></div>
+        }
+        <div class="col-3">
+            <input type="submit" class="btn btn-primary btn-block canBeHidden" value="Submit" />
+        </div>
+    </div>
+
 
 </form>
 
 
 
-
+<script src="~/js/InventoryScripts.js"></script>
 
 <script>
     function updateRemainingInventory() {
@@ -86,36 +287,144 @@
         final.value = initial.value - delta.value;
     }
 
-    function editMode() {
-        var editing = document.getElementById("editMode");
-        if (editing.checked) {
-            var hiddenItems = document.getElementsByClassName("canBeHidden");
-            for (var i = 0; i < hiddenItems.length; i++) {
-                hiddenItems[i].style.visibility = 'visible';
-            }
+    function purchaseSizeChanged() {
+        UpdateLandedCostPerUnit();
+        UpdateExtendedCostPerUnit();
+        @if (!Model.Editing)
+        {
+            <text>
+        var pSize = document.getElementById("purchase-size");
+        var remaining = document.getElementById("CurrentInventoryEditor")
+        remaining.value = pSize.value;
+        remaining.classList.add("blue-shine");
 
-            var disabledItems = document.getElementsByClassName("CanBeDisabled");
-            for (var i = 0; i < hiddenItems.length; i++) {
-                disabledItems[i].disabled = false;
-            }
-        }
-        else {
-            var hiddenItems = document.getElementsByClassName("canBeHidden");
-            for (var i = 0; i < hiddenItems.length; i++) {
-                hiddenItems[i].style.visibility = 'hidden';
-            }
 
-            var disabledItems = document.getElementsByClassName("CanBeDisabled");
-            for (var i = 0; i < hiddenItems.length; i++) {
-                disabledItems[i].disabled = true;
-            }
+        setTimeout(function () {
+            remaining.classList.remove("blue-shine");
+        }, 1000)
+            </text>
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        editMode();
-    }, false);
+    
 
+    function calculateTaxes() {
+        extendedCost = document.getElementById('extended-cost').value;
+
+
+        var gst = document.getElementById('gst')
+        var pst = document.getElementById('pst')
+
+        pst.value = extendedCost * @(HBSkincare.Managers.Taxes.Pst);
+        gst.value = extendedCost * @(HBSkincare.Managers.Taxes.Gst);
+
+        pst.classList.add("blue-shine");
+        gst.classList.add("blue-shine");
+
+
+        setTimeout(function () {
+            pst.classList.remove("blue-shine");
+            gst.classList.remove("blue-shine");
+        }, 1000)
+
+        updateLandedCost()
+        UpdateLandedCostPerUnit()
+    }
+
+    function LoadUnits(Resource) {
+        let myMap = new Map()
+        @foreach(var item in Model.RawMaterials)
+        {
+            <text>
+                myMap.set("@item.RawMaterialItemId", '@item.UnitOfMeasure');
+            </text>
+        }
+        var uom = document.getElementsByClassName('unit-of-measure');
+
+        for (var i = 0; i < uom.length; i++) {
+            uom[i].innerHTML = myMap.get(Resource);
+        }
+        document.getElementById('cost-per-unit-input-group').innerHTML = document.getElementById("ChosenCurrency").value+'/' + myMap.get(Resource);
+
+    }
+
+    async function CalculateCurrency(currency) {
+        await $.ajax({
+            type:"GET",
+            url: "https://api.exchangeratesapi.io/latest?base=CAD",
+            dataType: 'json',
+            success: function (result) {
+                document.getElementById("currency-rate").value = result["rates"][currency];
+            }
+        })
+        LoadUnits(document.getElementById("ChosenRawMaterial").value)
+        updateLandedCost()
+    }
+
+    function UpdateExtendedCostPerUnit() {
+        purchaseSize = document.getElementById('purchase-size')
+        extendedCost = document.getElementById('extended-cost')
+
+        costPerUnit = document.getElementById('extended-cost-per-unit')
+
+        costPerUnit.value = extendedCost.value / purchaseSize.value;
+
+        costPerUnit.classList.add("blue-shine");
+
+
+        setTimeout(function () {
+            costPerUnit.classList.remove("blue-shine");
+            document.getElementById('landed-cost-per-unit').classList.remove("blue-shine");
+        }, 1000)
+
+    }
+
+    function UpdateLandedCostPerUnit() {
+        purchaseSize = document.getElementById('purchase-size')
+        extendedCost = document.getElementById('landedCost')
+
+        costPerUnit = document.getElementById('landed-cost-per-unit')
+
+        costPerUnit.value = extendedCost.value / purchaseSize.value;
+
+        costPerUnit.classList.add("blue-shine");
+
+
+        setTimeout(function () {
+            costPerUnit.classList.remove("blue-shine");
+            document.getElementById('extended-cost-per-unit').classList.remove("blue-shine");
+        }, 1000)
+    }
+
+
+    function updateLandedCost() {
+        var sum = 0;
+        document.querySelectorAll(".landed-cost-sum").forEach(function (button) {
+            sum = sum + parseFloat(button.value)
+        });
+        var forex = document.getElementById("currency-rate").value
+
+        sum = sum / forex;
+
+        var element = document.getElementById("landedCost");
+        element.value = sum;
+
+
+        element.classList.add("blue-shine");
+
+
+        setTimeout(function(){
+            element.classList.remove("blue-shine");
+            document.getElementById('landed-cost-per-unit').classList.remove("blue-shine");
+        }, 1000)
+
+        UpdateLandedCostPerUnit()
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        changeEditMode();
+        LoadUnits(document.getElementById("ChosenRawMaterial").value);
+    }, false);
 
 
 </script>

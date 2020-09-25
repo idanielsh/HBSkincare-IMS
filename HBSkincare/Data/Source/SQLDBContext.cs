@@ -44,5 +44,45 @@ namespace HBSkincare.Data.Source
                 .FirstOrDefault();
         }
 
+        public IEnumerable<Currency> GetCurrencies()
+        {
+            return Currency;
+        }
+
+        public bool AddPurchase(RawMaterialPurchase rawMaterialPurchase)
+        {
+
+            try
+            {
+                RawMaterialPurchase.Update(rawMaterialPurchase);
+                SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public bool AddRawMaterial(RawMaterialItem rawMaterialItem)
+        {
+            try
+            {
+                RawMaterialItem.Update(rawMaterialItem);
+                SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public RawMaterialItem SearchRawMaterialItems(int id)
+        {
+            return RawMaterialItem
+                .Include(e => e.Purchases)
+                .FirstOrDefault(e => e.RawMaterialItemId == id);
+        }
     }
 }
